@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<form> <localhost> <user>
+
+			<!-- ______________________________________________________
+
+						Configuration Zend du formulaire
+			______________________________________________________ -->
+
+			<formConfig>
+				<name>frm_DcRapport_UpdateStatut</name><!-- L'id html du formulaire : <form id="...  -->
+				<method>post</method>
+				<elements>
+
+					<variables_session>
+						<type>textarea</type>
+						<options>
+							<readonly/>
+							<value>Var session = ?</value>
+							<cols>100</cols> <rows>1</rows>
+						</options>
+					</variables_session>
+
+					<xType>
+						<type>hidden</type>
+					</xType>
+
+				<!-- Les boutons de niveau formulaire -->
+					<submitValider>
+						<type>submit</type>
+						<options>
+							<label>Valider</label>
+						</options>
+					</submitValider>
+					<submitAnnuler>
+						<type>submit</type>
+						<options>
+							<label>Annuler</label>
+						</options>
+					</submitAnnuler>
+				</elements>
+			</formConfig>
+
+			<!-- ________________ Configuration "métier" spécifique du formulaire ______________________ -->
+			<formConfigSql>
+				<defaultValues>
+					<!-- _________________ SQL de lecture du (ou des) objet(s) existant __________________________ -->
+					<champsTexte>
+					</champsTexte>
+					<!-- _________________ SQL d'alimentation des listes de références _________________________ -->
+					<listesReference>
+					</listesReference>
+				</defaultValues>
+
+				<defautValuesHtml>
+					<defautValue for="e_Info">
+						<sql>   SELECT
+									tr.LibelleCourt AS xStatutNew
+									, (SELECT LibelleCourt FROM tr_nomenclatures where xType='NmDcRpStatut' AND Name='%SESSION_FavoriMode%') AS xStatut
+									, CONCAT (
+												CASE
+													WHEN '%SESSION_FavoriMode%'='Termine' THEN
+														'Vous pourrez denouveau apporter des modifications au rapport produit.'
+													ELSE
+														''
+												END
+											) AS e_conditions
+								<!-- 202003002_optimisation_XML_Dcrapport : utilisation de la vue dcrapport_shortread au lieu de dcrapport -->
+								<!-- FROM dcrapport d -->
+								FROM dcrapport_shortread d
+								LEFT JOIN tr_nomenclatures tr ON tr.Name=d.xStatut AND tr.xType='NmDcRpStatut'
+								WHERE Id=%POST_id2update%;
+							</sql>
+						<html>
+							<div class="font_default_color">
+								<fieldset title="">
+								  <b>
+									  <p style="color:red">
+										(Passer le statut de <font color="green"><var>xStatut</var></font> à <font color="green"><var>xStatutNew</var></font>)
+									  </p><br/>
+								  </b>
+								  <p><var>e_conditions</var></p><br/>
+								  <!-- <b><p>Si vous souhaitez la modifier, merci de la changer ci-dessous :</p></b>	 -->
+								</fieldset>
+							</div>
+						</html>
+					</defautValue>
+				</defautValuesHtml>
+
+				<!-- ______________________	SQL d'alimentation des liens __________________________________ -->
+			<!--	<liens>
+				</liens>		-->
+
+				<!-- ______________________	SQL d'execution des actions ___________________________________ -->
+				<actions>
+					<submitValider>
+						<validation>
+							<sql>
+								CALL PS_DcRapport_UpdateStatut_Val_v2(@xml
+									, %SESSION_UserId%
+									, %SESSION_ClientId%
+									, %SESSION_DossierId%
+									, %POST_id2update%
+									, 'Genere'
+									, %FIELD_date%);
+								SELECT @xml;
+							</sql>
+						</validation>
+					</submitValider>
+				</actions>
+			</formConfigSql>
+
+			<!-- _________________________________________________________________________
+							Mise en page du formulaire
+			______________________________________________________________________________ -->
+			<formConfigLayout>
+				<zone titre="Validation" id="zone1">
+					<groupement type="vertical">
+						<html id="e_Info" />
+					</groupement>
+				</zone>
+			</formConfigLayout>
+
+		</user>
+	</localhost>
+</form>
